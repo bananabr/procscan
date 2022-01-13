@@ -3,6 +3,8 @@ Procscan is a quick and dirty python script used to look for potentially dangero
 
 ## Installation
 ```
+git clone https://github.com/bananabr/procscan.git
+cd procscan
 python3 -m pip install -r requirements.txt
 ```
 ## Usage
