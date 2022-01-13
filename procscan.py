@@ -67,7 +67,7 @@ while True:
         continue
 af.close()
 
-#logging.debug(WRITABLE_PATHS)
+logging.debug(f"{v}\n" for v in WRITABLE_PATHS.values())
 
 print_banner()
 print(f"Loading {args.pml} records")
