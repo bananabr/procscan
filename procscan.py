@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from procmon_parser import ProcmonLogsReader
 import logging
 import argparse
