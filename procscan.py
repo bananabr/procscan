@@ -87,11 +87,12 @@ def processEvent(event):
     # DLL hijacking confirmation
     if event.operation == "Load_Image" \
             and event.path.endswith(".dll"):
+            if is_authority(event.process.user):
         logging.debug(dll_hijack_candidates)
         if dll_hijack_candidates.get(event.process.process_name, False):
             filename = (event.path.split('\\')[-1]).lower()
             if filename in dll_hijack_candidates[event.process.process_name]:
-                if event.process.user == "NT AUTHORITY\\SYSTEM":
+                if is_authority(event.process.user):
                     logging.critical(
                         f"{event.process.process_name} running as {event.process.user} eventually loads {filename} from {event.path}!")
                 else:
@@ -105,8 +106,7 @@ def processEvent(event):
         logging.warn(
             f"{event.process.process_name} running as {event.process.user} writes to {event.path}")
     # Arbitrary file delete
-    if  event.operation.startswith("SetDispositionInformation") \
-        and event.process.user == "NT AUTHORITY\\SYSTEM" \
+            and is_authority(event.process.user) \
         and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
         and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
         logging.warn(
@@ -119,8 +119,7 @@ def processEvent(event):
         logging.warn(
             f"{event.process.process_name} running as {event.process.user} calls SetRenameInformation* for {event.path}")
     # Arbitrary file permission grant
-    if  event.operation == "SetSecurityFile" \
-        and event.process.user == "NT AUTHORITY\\SYSTEM" \
+            and is_authority(event.process.user) \
         and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
         and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
         logging.warn(
