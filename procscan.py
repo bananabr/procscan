@@ -5,6 +5,14 @@ import logging
 # from pqdm.threads import pqdm
 import argparse
 
+
+def is_authority(username):
+    if username == "NT AUTHORITY\\LOCAL SERVICE" \
+            or username == "NT AUTHORITY\\NETWORK SERVICE" \
+            or username == "NT AUTHORITY\\SYSTEM":
+        return True
+    return False
+
 def print_banner():
     print("""
 
