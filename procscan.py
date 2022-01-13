@@ -28,6 +28,8 @@ def print_banner():
                   |:|  |        \::/  /       \:\__\        \::/  /       \:\__\         /:/  /        /:/  /   
                    \|__|         \/__/         \/__/         \/__/         \/__/         \/__/         \/__/    
 """)
+parser = argparse.ArgumentParser(
+    description='Scan a procmon PML file for potentially dangerous patterns.')
 parser.add_argument('--log', default='./procscan.log',
                     help='log file path')
 parser.add_argument('--verbose', '-v', action='count', default=0,
