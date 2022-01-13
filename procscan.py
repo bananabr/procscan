@@ -80,7 +80,13 @@ def processEvent(event):
     logging.debug(event)
     if event.path:
         logging.debug(event.path.split('\\')[:-1])
-        logging.debug(WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False))
+    # Writable executable
+    if event.operation == "Load_Image" \
+            and event.path.endswith(".exe") \
+            and WRITABLE_PATHS.get(event.path, False):
+        if is_authority(event.process.user):
+            logging.critical(
+                f"{event.process.process_name} running as {event.process.user} loaded a writable PE located at {event.path}!")
     # DLL hijacking
     if event.operation == "CreateFile" \
             and (event.result == 0xc0000034
