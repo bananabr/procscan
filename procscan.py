@@ -5,7 +5,21 @@ import logging
 # from pqdm.threads import pqdm
 import argparse
 
-parser = argparse.ArgumentParser(description='Scan a procmon PML file for potentially dangerous patterns.')
+def print_banner():
+    print("""
+
+      ___           ___           ___           ___           ___           ___           ___           ___     
+     /\  \         /\  \         /\  \         /\  \         /\  \         /\  \         /\  \         /\__\    
+    /::\  \       /::\  \       /::\  \       /::\  \       /::\  \       /::\  \       /::\  \       /::|  |   
+   /:/\:\  \     /:/\:\  \     /:/\:\  \     /:/\:\  \     /:/\ \  \     /:/\:\  \     /:/\:\  \     /:|:|  |   
+  /::\~\:\  \   /::\~\:\  \   /:/  \:\  \   /:/  \:\  \   _\:\~\ \  \   /:/  \:\  \   /::\~\:\  \   /:/|:|  |__ 
+ /:/\:\ \:\__\ /:/\:\ \:\__\ /:/__/ \:\__\ /:/__/ \:\__\ /\ \:\ \ \__\ /:/__/ \:\__\ /:/\:\ \:\__\ /:/ |:| /\__\\
+ \/__\:\/:/  / \/_|::\/:/  / \:\  \ /:/  / \:\  \  \/__/ \:\ \:\ \/__/ \:\  \  \/__/ \/__\:\/:/  / \/__|:|/:/  /
+      \::/  /     |:|::/  /   \:\  /:/  /   \:\  \        \:\ \:\__\    \:\  \            \::/  /      |:/:/  / 
+       \/__/      |:|\/__/     \:\/:/  /     \:\  \        \:\/:/  /     \:\  \           /:/  /       |::/  /  
+                  |:|  |        \::/  /       \:\__\        \::/  /       \:\__\         /:/  /        /:/  /   
+                   \|__|         \/__/         \/__/         \/__/         \/__/         \/__/         \/__/    
+""")
 parser.add_argument('--log', default='./procscan.log',
                     help='log file path')
 parser.add_argument('--verbose', '-v', action='count', default=0,
@@ -45,6 +59,7 @@ af.close()
 
 #logging.debug(WRITABLE_PATHS)
 
+print_banner()
 print(f"Loading {args.pml} records")
 pml_reader = ProcmonLogsReader(f)
 print(f"Processing {len(pml_reader)} records")  # number of logs
