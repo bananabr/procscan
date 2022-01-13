@@ -28,14 +28,14 @@ def print_banner():
 
 parser = argparse.ArgumentParser(
     description='Scan a procmon PML file for potentially dangerous patterns.')
-parser.add_argument('--log', default='./procscan.log',
+parser.add_argument('--log', default='./procscan.log', metavar="LOG_FILE",
                     help='log file path')
 parser.add_argument('--verbose', '-v', action='count', default=0,
                     help='increase verbosity')
-parser.add_argument('--pml', required=True,
+parser.add_argument('--pml', required=True, metavar="PML_FILE",
                     help='procscan PML file')
-parser.add_argument('--ac', required=True,
-                    help='accesschk output file')
+parser.add_argument('--ac', required=True, metavar="ACCESSCHK_FILE",
+                    help='"accesschk.exe -swu low_priv_username C:\\" output file')
 
 args = parser.parse_args()
 
