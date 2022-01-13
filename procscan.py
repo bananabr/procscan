@@ -1,8 +1,5 @@
-# from joblib.parallel import delayed
 from procmon_parser import ProcmonLogsReader
 import logging
-# from joblib import Parallel, delayed, parallel_backend
-# from pqdm.threads import pqdm
 import argparse
 
 
@@ -28,6 +25,7 @@ def print_banner():
                   |:|  |        \::/  /       \:\__\        \::/  /       \:\__\         /:/  /        /:/  /   
                    \|__|         \/__/         \/__/         \/__/         \/__/         \/__/         \/__/    
 """)
+
 parser = argparse.ArgumentParser(
     description='Scan a procmon PML file for potentially dangerous patterns.')
 parser.add_argument('--log', default='./procscan.log',
@@ -76,10 +74,9 @@ print(f"Processing {len(pml_reader)} records")  # number of logs
 
 dll_hijack_candidates = {}
 
+
 def processEvent(event):
     logging.debug(event)
-    if event.path:
-        logging.debug(event.path.split('\\')[:-1])
     # Writable executable
     if event.operation == "Load_Image" \
             and event.path.endswith(".exe") \
@@ -94,7 +91,7 @@ def processEvent(event):
         and event.path.endswith(".dll") \
             and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
         logging.warn(
-            f"{event.process.process_name} tries to read a nonexistent DLL at {event.path}")
+            f"{event.process.process_name} tried to read a nonexistent DLL at {event.path}")
         filename = (event.path.split('\\')[-1]).lower()
         if dll_hijack_candidates.get(event.process.process_name, False):
             dll_hijack_candidates[event.process.process_name].append(filename)
@@ -103,47 +100,51 @@ def processEvent(event):
     # DLL hijacking confirmation
     if event.operation == "Load_Image" \
             and event.path.endswith(".dll"):
+        # Writable DLL loaded by privileged process
+        if WRITABLE_PATHS.get(event.path, False):
             if is_authority(event.process.user):
+                logging.critical(
+                    f"{event.process.process_name} running as {event.process.user} loaded a writable DLL located at {event.path}!")
+        # DLL hijacking confirmation
         logging.debug(dll_hijack_candidates)
         if dll_hijack_candidates.get(event.process.process_name, False):
             filename = (event.path.split('\\')[-1]).lower()
             if filename in dll_hijack_candidates[event.process.process_name]:
                 if is_authority(event.process.user):
                     logging.critical(
-                        f"{event.process.process_name} running as {event.process.user} eventually loads {filename} from {event.path}!")
+                        f"{event.process.process_name} running as {event.process.user} eventually loaded {filename} from {event.path}!")
                 else:
                     logging.error(
-                        f"{event.process.process_name} running as {event.process.user} eventually loads {filename} from {event.path}!")
+                        f"{event.process.process_name} running as {event.process.user} eventually loaded {filename} from {event.path}!")
     # Arbitrary file write
     if event.operation == "WriteFile" \
-        and event.process.user == "NT AUTHORITY\\SYSTEM" \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
+            and is_authority(event.process.user) \
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
         logging.warn(
-            f"{event.process.process_name} running as {event.process.user} writes to {event.path}")
+            f"{event.process.process_name} running as {event.process.user} wrote to {event.path}")
     # Arbitrary file delete
+    if event.operation.startswith("SetDispositionInformation") \
             and is_authority(event.process.user) \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
         logging.warn(
-            f"{event.process.process_name} running as {event.process.user} calls SetDispositionInformation* for {event.path}")
+            f"{event.process.process_name} running as {event.process.user} called SetDispositionInformation* for {event.path}")
     # Arbitrary file move
-    if  event.operation.startswith("SetRenameInformation") \
-        and event.process.user == "NT AUTHORITY\\SYSTEM" \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
-        logging.warn(
-            f"{event.process.process_name} running as {event.process.user} calls SetRenameInformation* for {event.path}")
-    # Arbitrary file permission grant
+    if event.operation.startswith("SetRenameInformation") \
             and is_authority(event.process.user) \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
-        and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
         logging.warn(
-            f"{event.process.process_name} running as {event.process.user} calls SetSecurityFile for {event.path}")
+            f"{event.process.process_name} running as {event.process.user} called SetRenameInformation* for {event.path}")
+    # Arbitrary file permission grant
+    if event.operation == "SetSecurityFile" \
+            and is_authority(event.process.user) \
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
+            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
+        logging.warn(
+            f"{event.process.process_name} running as {event.process.user} called SetSecurityFile for {event.path}")
 
-# with parallel_backend('threading', n_jobs=os.cpu_count()):
-#     Parallel()(delayed(processEvent)(e) for e in pml_reader)
 
-#pqdm(pml_reader, processEvent, n_jobs=os.cpu_count())
 for event in pml_reader:
     processEvent(event)
