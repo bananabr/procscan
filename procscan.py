@@ -92,7 +92,7 @@ def processEvent(event):
                  or event.result == 0xc000003a) \
         and event.path.endswith(".dll") \
             and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
-        logging.warn(
+        logging.warning(
             f"{event.process.process_name} tried to read a nonexistent DLL at {event.path}")
         filename = (event.path.split('\\')[-1]).lower()
         if dll_hijack_candidates.get(event.process.process_name, False):
@@ -121,30 +121,26 @@ def processEvent(event):
     # Arbitrary file write
     if event.operation == "WriteFile" \
             and is_authority(event.process.user) \
-            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
             and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
-        logging.warn(
+        logging.warning(
             f"{event.process.process_name} running as {event.process.user} wrote to {event.path}")
     # Arbitrary file delete
     if event.operation.startswith("SetDispositionInformation") \
             and is_authority(event.process.user) \
-            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
             and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
-        logging.warn(
+        logging.warning(
             f"{event.process.process_name} running as {event.process.user} called SetDispositionInformation* for {event.path}")
     # Arbitrary file move
     if event.operation.startswith("SetRenameInformation") \
             and is_authority(event.process.user) \
-            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
             and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
-        logging.warn(
+        logging.warning(
             f"{event.process.process_name} running as {event.process.user} called SetRenameInformation* for {event.path}")
     # Arbitrary file permission grant
     if event.operation == "SetSecurityFile" \
             and is_authority(event.process.user) \
-            and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-2]), False) \
             and WRITABLE_PATHS.get("\\".join(event.path.split('\\')[:-1]), False):
-        logging.warn(
+        logging.warning(
             f"{event.process.process_name} running as {event.process.user} called SetSecurityFile for {event.path}")
 
 
