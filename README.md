@@ -10,14 +10,16 @@ python3 -m pip install -r requirements.txt
 ## Usage
 
 ```
-usage: procscan.py [-h] [--log LOG] [--verbose] --pml PML --ac AC
+usage: procscan.py [-h] [--log LOG_FILE] [--verbose] --pml PML_FILE --ac ACCESSCHK_FILE
 
-optional arguments:
-  -h, --help     show this help message and exit
-  --log LOG      log file path
-  --verbose, -v  increase verbosity
-  --pml PML      procscan PML file
-  --ac AC        accesschk output file
+Scan a procmon PML file for potentially dangerous patterns.
+
+options:
+  -h, --help           show this help message and exit
+  --log LOG_FILE       log file path
+  --verbose, -v        increase verbosity
+  --pml PML_FILE       procscan PML file
+  --ac ACCESSCHK_FILE  "accesschk.exe -swu low_priv_username C:\" output file
 ```
 
 ## Todo
